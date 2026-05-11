@@ -72,7 +72,7 @@ jobs:
     if: needs.prepare_matrix.outputs.selected_platforms != '[]'
 
     name: Build for ${{ matrix.targetPlatform }}
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     # 设置UNITY_PROJEC_PATH，甚至可以使用切换多个unity项目，不设置则为仓库根目录
     env:
       UNITY_PROJECT_PATH: ${{ vars.UNITY_PROJECT_PATH || '' }}
@@ -125,6 +125,7 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           projectPath: ${{ env.UNITY_PROJECT_PATH }}
+          customParameters: -define:CU_CUSTOM_ENABLED
           # 关键点：将 SSH Agent 的 Socket 传给运行在 Docker 中的 Unity Builder
           sshAgent: ${{ env.SSH_AUTH_SOCK }}
 
