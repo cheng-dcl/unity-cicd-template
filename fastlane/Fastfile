@@ -1,0 +1,184 @@
+﻿org, repo = (ENV["GITHUB_REPOSITORY"]||"").split("/")
+match_org, match_repo = (ENV["MATCH_REPOSITORY"]||"").split("/")
+
+# ==============================================
+# 所有 def 方法 必须写在最外层（正确位置）
+# ==============================================
+require 'json'
+
+# 检查公钥DeployKey和私钥MATCH_DEPLOY_KEY是否都存在
+# 两者都存在就跳过action创建，不是就删掉数据清空重建
+def match_key_status?()
+  repo = ENV["GITHUB_REPOSITORY"]
+  match_repo = ENV["MATCH_REPOSITORY"]
+  gh_pat = ENV["GH_PAT"]
+
+  has_secret = false
+  begin
+    resp = `curl -s -m 10 -H "Authorization: token #{gh_pat}" "https://api.github.com/repos/#{repo}/actions/secrets"`
+    secrets = JSON.parse(resp)
+    has_secret = secrets["secrets"].any? { |s| s["name"] == "MATCH_DEPLOY_KEY" }
+  rescue
+    has_secret = false
+  end
+
+  has_deploy_key = false
+  begin
+    resp = `curl -s -m 10 -H "Authorization: token #{gh_pat}" "https://api.github.com/repos/#{match_repo}/keys"`
+    keys = JSON.parse(resp)
+    has_deploy_key = keys.any? { |k| k["title"]&.include?("fastlane-plugin-github_action") || k["title"]&.include?("Match Deploy Key") }
+  rescue
+    has_deploy_key = false
+  end
+   
+  puts "#{match_repo}- #{has_deploy_key},Match Deploy Key - #{has_secret}"
+
+  has_two = has_secret && has_deploy_key
+  unless has_two
+    UI.message("⚠️环境不完整，开始清空重建...")
+    if has_secret
+      delete_match_deploy_secret(repo,gh_pat)
+    end
+    if has_deploy_key
+      delete_all_old_deploy_keys(match_repo,gh_pat)
+    end
+  end
+  has_two
+end
+
+# 删除 match 仓库的 MATCH_DEPLOY_KEY
+def delete_match_deploy_secret(repo,gh_pat)
+  UI.message("🗑  删除秘钥 MATCH_DEPLOY_KEY")
+  `curl -s -m 10 -X DELETE -H "Authorization: token #{gh_pat}" "https://api.github.com/repos/#{repo}/actions/secrets/MATCH_DEPLOY_KEY"`
+end
+
+# 删除 match 仓库所有旧 DeployKey
+def delete_all_old_deploy_keys(match_repo,gh_pat)
+  keys_url = "https://api.github.com/repos/#{match_repo}/keys"
+  keys = JSON.parse(`curl -s -m 10 -H "Authorization: token #{gh_pat}" "#{keys_url}"`) rescue []
+  keys.each do |key|
+    if key["title"].include?("fastlane-plugin-github_action") || key["title"].include?("Match Deploy Key")
+      UI.message("🗑  删除旧 DeployKey: #{key['title']}")
+      `curl -s -m 10 -X DELETE -H "Authorization: token #{gh_pat}" "#{keys_url}/#{key['id']}"`
+    end
+  end
+end
+
+
+platform :ios do
+
+  before_all do |lane|
+    setup_ci
+    UI.message("开始执行Lane:#{lane}")
+  end
+
+  lane :test_env do
+    puts "====================================="
+    puts "🔥 Test Environment Variables 🔥"
+    puts "====================================="
+    puts "GITHUB_REPOSITORY = #{ENV['GITHUB_REPOSITORY']}"
+    puts "MATCH_REPOSITORY  = #{ENV['MATCH_REPOSITORY']}"
+    puts "match_org = #{match_org}"
+    puts "match_repo = #{match_repo}"
+    puts "IOS_BUNDLE_ID     = #{ENV['IOS_BUNDLE_ID']}"
+    puts "====================================="
+  end
+  
+
+  
+  lane :init_ci do
+
+    # if match_key_status?()
+    #   UI.success("✅ Deploy Key + MATCH_DEPLOY_KEY 都齐全，跳过")
+    #   next
+    # end
+    
+    
+    # github_action没办法让统一的match repo在多项目使用，密钥没办法共享，必须手动创建密钥供所有项目使用。
+    # 一一对应的match repo可以自动化。但fastlane又可能创建多个Certificates,也不太符合逻辑
+    # 不需要手动创建密钥,也不用多余设置Deploy Key了，直接就用Token去match
+    github_action(
+      api_token: ENV["GH_PAT"],
+      org: org,
+      repo: repo,
+      match_org: match_org,
+      match_repo: match_repo,
+      writable_deploy_key: true,
+    )
+  end
+
+  desc "Sync certificates and provisioning profiles using match"
+  lane :sync_certificates do
+    app_store_connect_api_key(
+      key_id: ENV["APPSTORE_KEY_ID"],
+      issuer_id: ENV["APPSTORE_ISSUER_ID"],
+      key_content: ENV['APPSTORE_P8'],
+    )
+    # 丢弃ssh方式，多余设置Deploy Key，直接使用token
+    # match(
+    #   type: "appstore",
+    #   storage_mode: "git",
+    #   git_url: "git@github.com:#{match_org}/#{match_repo}.git",
+    #   app_identifier: ENV["IOS_BUNDLE_ID"],
+    #   git_branch: "main"
+    # )
+    match(
+      type: "appstore",
+      storage_mode: "git",
+      git_url: "https://#{ENV['GH_PAT']}@github.com/#{match_org}/#{match_repo}.git",
+      app_identifier: ENV["IOS_BUNDLE_ID"],
+      git_branch: "main",
+      readonly: false
+    )
+  end
+  
+  desc "Release to App Store"
+  lane :release do
+    build
+    upload_to_app_store
+  end
+
+  desc "Release to TestFlight"
+  lane :beta do
+    update_info_plist(
+      xcodeproj: "#{ENV['IOS_BUILD_PATH']}/iOS/Unity-iPhone.xcodeproj",
+      plist_path: 'Info.plist',
+      block: proc do |plist|
+        plist['ITSAppUsesNonExemptEncryption'] = false
+      end
+    )
+    build
+    upload_to_testflight(skip_waiting_for_build_processing: true)
+  end
+
+  desc "Build .ipa"
+  lane :build do
+    sync_certificates
+
+    # Unity 代码签名特殊处理
+    update_code_signing_settings(
+      use_automatic_signing: true,
+      path: "#{ENV['IOS_BUILD_PATH']}/iOS/Unity-iPhone.xcodeproj"
+    )
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      team_id: ENV["sigh_#{ENV['IOS_BUNDLE_ID']}_appstore_team-id"],
+      code_sign_identity: 'iPhone Distribution',
+      targets: 'Unity-iPhone',
+      path: "#{ENV['IOS_BUILD_PATH']}/iOS/Unity-iPhone.xcodeproj",
+      profile_name: ENV["sigh_#{ENV['IOS_BUNDLE_ID']}_appstore_profile-name"],
+      profile_uuid: ENV["sigh_#{ENV['IOS_BUNDLE_ID']}_appstore"]
+    )
+
+    build_app(
+      project: "#{ENV['IOS_BUILD_PATH']}/iOS/Unity-iPhone.xcodeproj",
+      scheme: 'Unity-iPhone',
+      xcargs: '-allowProvisioningUpdates',
+      destination: "generic/platform=iOS", 
+      export_options: {
+        manageAppVersionAndBuildNumber: false 
+      }
+    )
+  end 
+  
+end

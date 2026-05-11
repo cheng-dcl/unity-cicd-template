@@ -1,0 +1,134 @@
+﻿name: iOS Build & Release
+on:
+  workflow_dispatch:
+    inputs:
+      step:
+        description: "Choose step to run:"
+        required: true
+        default: "full"
+        type: choice
+        options:
+          - full
+          - build
+          - release
+
+      build_type:
+        description: "Choose release type:"
+        required: true
+        default: "TestFlight"
+        type: choice
+        options:
+          - TestFlight
+          - Appstore
+
+jobs:
+  buildForiOSPlatform:
+    name: Build for iOS
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.step != 'release' }}
+    env: ${{ vars.UNITY_PROJECT_PATH || '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+          submodules: recursive
+          token: ${{ secrets.GH_PAT }}
+
+      # 步骤 A：将 GitHub 添加到 SSH 的已知主机列表中，防止连接时卡在确认提示上
+      - name: "Add GitHub to the SSH known hosts file"
+        run: |
+          mkdir -p -m 0700 /home/runner/.ssh
+          curl --silent https://api.github.com/meta | jq --raw-output '"github.com "+.ssh_keys[]' >> /home/runner/.ssh/known_hosts
+          chmod 600 /home/runner/.ssh/known_hosts
+
+      # 步骤 B：启动 SSH Agent 并加载你存放在 Secret 中的私钥
+      - uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - uses: actions/cache@v3
+        # with:
+        #   path: Library
+        #   key: Library-iOS
+        #   restore-keys: Library-
+        with:
+          path: ${{ empty(env.UNITY_PROJECT_PATH) && 'Library' || format('{0}/Library', env.UNITY_PROJECT_PATH) }}
+          key: Library-${{ env.UNITY_PROJECT_PATH }}-iOS
+          restore-keys: |
+            Library-${{ env.UNITY_PROJECT_PATH }}-
+
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: iOS
+          sshAgent: ${{ env.SSH_AUTH_SOCK }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: build-${{ env.UNITY_PROJECT_PATH }}-iOS
+          path: build/iOS
+          retention-days: 1
+
+  releaseToAppStore:
+    name: Release to ${{ github.event.inputs.build_type }}
+    runs-on: macos-latest
+    needs: buildForiOSPlatform
+    if: ${{ always() && github.event.inputs.step == 'release' || success() && github.event.inputs.step == 'full' }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+          submodules: recursive
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Download iOS Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: build-iOS
+          path: build/iOS
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "latest"
+
+      - name: Fix File Permissions and Run fastlane
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          APPLE_CONNECT_EMAIL: ${{ secrets.APPLE_CONNECT_EMAIL }}
+          APPLE_DEVELOPER_EMAIL: ${{ secrets.APPLE_DEVELOPER_EMAIL }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
+          # MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
+          IOS_BUILD_PATH: ${{ format('{0}/build/iOS', github.workspace) }}
+          IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID }}
+        run: |
+          # eval "$(ssh-agent -s)"
+          # echo "${MATCH_DEPLOY_KEY}" | ssh-add -
+
+          find $IOS_BUILD_PATH -type f -name "**.sh" -exec chmod +x {} \;
+          find $IOS_BUILD_PATH -type f -iname "usymtool*" -exec chmod +x {} \;
+
+          bundle install
+
+          if [[ "${{ github.event.inputs.build_type }}" == "TestFlight" ]]; then
+            bundle exec fastlane ios beta skip_archive_simulator_check:true
+          else
+            bundle exec fastlane ios appstore skip_archive_simulator_check:true
+          fi
+
+      # - name: Cleanup to avoid storage limit
+      #   if: always()
+      #   uses: geekyeggo/delete-artifact@v2
+      #   with:
+      #     name: build-iOS

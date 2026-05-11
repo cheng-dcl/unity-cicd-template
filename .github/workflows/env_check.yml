@@ -1,0 +1,109 @@
+﻿name: Check Secrets & Variables
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Secrets and Variables
+        run: |
+          # 必需（缺失=失败）
+          missing_required_vars=()
+          missing_required_secrets=()
+
+          # 自动生成（缺失=失败）
+          missing_auto_generate_secrets=()
+
+          # 可选（缺失=仅提示）
+          missing_optional_vars=()
+          missing_optional_secrets=()
+
+
+
+          REQUIRED_SECRETS="APPSTORE_KEY_ID APPSTORE_ISSUER_ID APPSTORE_P8 
+                            APPLE_TEAM_ID APPLE_DEVELOPER_EMAIL APPLE_CONNECT_EMAIL 
+                            GH_PAT MATCH_REPOSITORY MATCH_PASSWORD 
+                            UNITY_EMAIL UNITY_PASSWORD UNITY_LICENSE"
+          REQUIRED_VARS="IOS_BUNDLE_ID"
+
+          OPTIONAL_SECRETS="SSH_PRIVATE_KEY "
+          AUTO_GENERATE_SECRETS=""
+          OPTIONAL_VARS="UNITY_PROJECT_PATH"
+
+          for name in $REQUIRED_VARS; do
+            [[ -z "${!name}" ]] && missing_required_vars+=("$name")
+          done
+
+          for name in $REQUIRED_SECRETS; do
+            [[ -z "${!name}" ]] && missing_required_secrets+=("$name")
+          done
+
+          for name in $OPTIONAL_VARS; do
+            [[ -z "${!name}" ]] && missing_optional_vars+=("$name")
+          done
+
+          for name in $OPTIONAL_SECRETS; do
+            [[ -z "${!name}" ]] && missing_optional_secrets+=("$name")
+          done
+
+          for name in $AUTO_GENERATE_SECRETS; do
+            [[ -z "${!name}" ]] && missing_auto_generate_secrets+=("$name")
+          done
+
+
+          echo -e "\n=================信息输出======================="
+          echo "📦必需的Variables缺失：${missing_required_vars[*]:-✅ 无}"
+          echo "🔒必需的Secrets缺失：${missing_required_secrets[*]:-✅ 无}"
+          echo ""
+          echo "📦可选的Variables缺失：${missing_optional_vars[*]:-✅ 无}"
+          echo "🔒可选的Secrets缺失：${missing_optional_secrets[*]:-✅ 无}"
+          echo "🔐自动生成的Secrets缺失：${missing_auto_generate_secrets[*]:-✅ 无}"
+          echo -e "========================================\n"
+
+          if [[ ${#missing_required_vars[@]} -gt 0 || ${#missing_required_secrets[@]} -gt 0 ]]; then
+            echo "❌检查失败：请补充必需的Variables / Secrets"
+            [[ ${#missing_required_vars[@]} -gt 0 ]] && echo "   ➤ Variables: ${missing_required_vars[*]}"
+            [[ ${#missing_required_secrets[@]} -gt 0 ]] && echo "   ➤ Secrets: ${missing_required_secrets[*]}"
+            exit 1
+          elif [[ ${#missing_auto_generate_secrets[@]} -gt 0 ]]; then
+            echo "❌检查失败：以下应该自动生成的配置缺失，请执行'ios_setup'workflow"
+            [[ ${#missing_auto_generate_secrets[@]} -gt 0 ]] && echo "   ➤ Secrets: ${missing_auto_generate_secrets[*]}"
+            exit 1
+          else
+            echo "✅所有必需的和自动生成的配置正常！"
+            exit 0
+          fi
+
+        # ======================================================
+        # GitHub 必须写这里才能读取（所有要检查的 key 都列出来）
+        # ======================================================
+        env:
+          # === Required Vars ===
+          IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID }}
+          # === Optional Vars ===
+          UNITY_PROJECT_PATH: ${{ vars.UNITY_PROJECT_PATH }}
+
+          # === Required Secrets ===
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_DEVELOPER_EMAIL: ${{ secrets.APPLE_DEVELOPER_EMAIL }}
+          APPLE_CONNECT_EMAIL: ${{ secrets.APPLE_CONNECT_EMAIL }}
+
+          MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+
+          GH_PAT: ${{ secrets.GH_PAT }}
+
+          # === Optional Secrets ===
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }} # 用于unity package的ssh访问单个私有仓库
+          # MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}  #丢弃，使用Personal Access Token的方式match更简单安全，且不需要额外维护部署密钥了
+
+          # === Auto Generate Secrets ===

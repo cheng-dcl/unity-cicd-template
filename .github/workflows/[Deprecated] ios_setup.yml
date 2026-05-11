@@ -1,0 +1,34 @@
+# 可以不用ssh模式，多余部署密钥，直接使用 https 模式访问 Match 仓库，配合 GitHub Token 进行认证即可
+name: iOS Setup [Deprecated]
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    name: Setup Match Repository and MATCH_DEPLOY_KEY Secret
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2
+          bundler-cache: true
+
+      - name: Create Match Repository Deploy Key and Update Secrets
+        shell: bash
+        run: |
+          # bundle exec fastlane ios test_env
+          bundle exec fastlane ios init_ci
+        env:
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_P8: ${{ secrets.APPSTORE_P8 }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
+          MATCH_REPOSITORY: ${{ secrets.MATCH_REPOSITORY }}
+          IOS_BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID }}
