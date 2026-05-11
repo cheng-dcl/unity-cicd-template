@@ -73,7 +73,9 @@ jobs:
 
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
-    env: ${{ vars.UNITY_PROJECT_PATH || '' }} # 设置UNITY_PROJEC_PATH，甚至可以使用切换多个unity项目，不设置则为仓库根目录
+    # 设置UNITY_PROJEC_PATH，甚至可以使用切换多个unity项目，不设置则为仓库根目录
+    env:
+      UNITY_PROJECT_PATH: ${{ vars.UNITY_PROJECT_PATH || '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -107,7 +109,7 @@ jobs:
         #   key: Library-${{ matrix.targetPlatform }}
         #   restore-keys: Library-
         with:
-          path: ${{ empty(env.UNITY_PROJECT_PATH) && 'Library' || format('{0}/Library', env.UNITY_PROJECT_PATH) }}
+          path: ${{ env.UNITY_PROJECT_PATH == '' && 'Library' || format('{0}/Library', env.UNITY_PROJECT_PATH) }}
           key: Library-${{ env.UNITY_PROJECT_PATH }}-${{ matrix.targetPlatform }}
           restore-keys: |
             Library-${{ env.UNITY_PROJECT_PATH }}-

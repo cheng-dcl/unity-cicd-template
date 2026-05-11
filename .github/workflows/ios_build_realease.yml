@@ -26,7 +26,8 @@ jobs:
     name: Build for iOS
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.step != 'release' }}
-    env: ${{ vars.UNITY_PROJECT_PATH || '' }}
+    env:
+      UNITY_PROJECT_PATH: ${{ vars.UNITY_PROJECT_PATH || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,7 +54,7 @@ jobs:
         #   key: Library-iOS
         #   restore-keys: Library-
         with:
-          path: ${{ empty(env.UNITY_PROJECT_PATH) && 'Library' || format('{0}/Library', env.UNITY_PROJECT_PATH) }}
+          path: ${{ env.UNITY_PROJECT_PATH == '' && 'Library' || format('{0}/Library', env.UNITY_PROJECT_PATH) }}
           key: Library-${{ env.UNITY_PROJECT_PATH }}-iOS
           restore-keys: |
             Library-${{ env.UNITY_PROJECT_PATH }}-
