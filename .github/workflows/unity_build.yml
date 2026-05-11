@@ -125,7 +125,8 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           projectPath: ${{ env.UNITY_PROJECT_PATH }}
-          customParameters: -define:CU_CUSTOM_ENABLED
+          buildMethod: UnityBuilderAction.BuildCommand.PerformBuild
+          allowDirtyBuild: true
           # 关键点：将 SSH Agent 的 Socket 传给运行在 Docker 中的 Unity Builder
           sshAgent: ${{ env.SSH_AUTH_SOCK }}
 
