@@ -1,0 +1,26 @@
+{
+    "name": "Game",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b8fbd09f9c5540b2befd551439f60ef2",
+        "GUID:d2b14dcaef284132af66dd9a622ddca6",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:4ada7b1659cce534e9555724018de680",
+        "GUID:b22a2751f72b2e14597e4e261099ca57"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "cheng.unity.cu-framework",
+            "expression": "",
+            "define": ""
+        }
+    ],
+    "noEngineReferences": false
+}

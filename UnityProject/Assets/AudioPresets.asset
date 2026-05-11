@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0943ae0e9066468c8f00805e44bf19b2, type: 3}
+  m_Name: AudioPresets
+  m_EditorClassIdentifier: 
+  musicClips:
+    entries:
+    - key: 0
+      value: {fileID: 8300000, guid: 78f9ee7fdcbff224697eb791e259bdf9, type: 3}
+  uiClips:
+    entries:
+    - key: 0
+      value: {fileID: 8300000, guid: 36bf7aca45aeb2949bce6b1404ec2c7a, type: 3}
+  voiceClips:
+    entries:
+    - key: 0
+      value: {fileID: 0}
+  effectClips:
+    entries:
+    - key: 0
+      value: {fileID: 8300000, guid: 4954e391d479b3f4890424d772d2f04d, type: 3}
+  useMixerControl: 0
+  audioMixer: {fileID: 0}
