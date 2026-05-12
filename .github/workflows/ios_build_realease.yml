@@ -71,7 +71,7 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: build-iOS
+          name: build-${{ env.UNITY_PROJECT_PATH }}-iOS
           path: build/iOS
           retention-days: 1
 
@@ -94,7 +94,7 @@ jobs:
       - name: Download iOS Artifact
         uses: actions/download-artifact@v8
         with:
-          name: build-iOS
+          name: build-${{ env.UNITY_PROJECT_PATH }}-iOS
           path: build/iOS
 
       - name: Setup Xcode
