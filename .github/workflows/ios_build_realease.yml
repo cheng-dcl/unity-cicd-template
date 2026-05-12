@@ -80,6 +80,8 @@ jobs:
     runs-on: macos-latest
     needs: buildForiOSPlatform
     if: ${{ always() && github.event.inputs.step == 'release' || success() && github.event.inputs.step == 'full' }}
+    env:
+      UNITY_PROJECT_PATH: ${{ vars.UNITY_PROJECT_PATH || '' }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -92,7 +94,7 @@ jobs:
       - name: Download iOS Artifact
         uses: actions/download-artifact@v8
         with:
-          name: build-iOS
+          name: build-${{ env.UNITY_PROJECT_PATH }}-iOS
           path: build/iOS
 
       - name: Setup Xcode
