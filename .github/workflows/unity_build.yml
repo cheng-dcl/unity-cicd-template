@@ -73,7 +73,10 @@ jobs:
 
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
-    env: ${{ vars.UNITY_PROJECT_PATH || '' }} # 设置UNITY_PROJEC_PATH，甚至可以使用切换多个unity项目，不设置则为仓库根目录
+    # 设置UNITY_PROJEC_PATH，甚至可以使用切换多个unity项目，不设置则为仓库根目录
+    env:
+      UNITY_PROJECT_PATH: ${{ vars.UNITY_PROJECT_PATH || '' }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY || '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -90,16 +93,17 @@ jobs:
           token: ${{ secrets.GH_PAT }}
 
       # 步骤 A：将 GitHub 添加到 SSH 的已知主机列表中，防止连接时卡在确认提示上
-      - name: "Add GitHub to the SSH known hosts file"
+      - name: "Add GitHub to the SSH known hosts (Linux)"
         run: |
           mkdir -p -m 0700 /home/runner/.ssh
           curl --silent https://api.github.com/meta | jq --raw-output '"github.com "+.ssh_keys[]' >> /home/runner/.ssh/known_hosts
           chmod 600 /home/runner/.ssh/known_hosts
 
       # 步骤 B：启动 SSH Agent 并加载你存放在 Secret 中的私钥
-      - uses: webfactory/ssh-agent@v0.8.0
+      - if: env.SSH_PRIVATE_KEY != ''
+        uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
 
       - uses: actions/cache@v3
         # with:
@@ -107,7 +111,7 @@ jobs:
         #   key: Library-${{ matrix.targetPlatform }}
         #   restore-keys: Library-
         with:
-          path: ${{ empty(env.UNITY_PROJECT_PATH) && 'Library' || format('{0}/Library', env.UNITY_PROJECT_PATH) }}
+          path: ${{ env.UNITY_PROJECT_PATH == '' && 'Library' || format('{0}/Library', env.UNITY_PROJECT_PATH) }}
           key: Library-${{ env.UNITY_PROJECT_PATH }}-${{ matrix.targetPlatform }}
           restore-keys: |
             Library-${{ env.UNITY_PROJECT_PATH }}-
@@ -123,8 +127,8 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           projectPath: ${{ env.UNITY_PROJECT_PATH }}
-          # 关键点：将 SSH Agent 的 Socket 传给运行在 Docker 中的 Unity Builder
-          sshAgent: ${{ env.SSH_AUTH_SOCK }}
+          # 将 SSH Agent自动生成的SSH_AUTH_SOCK传给运行在 Docker中的Unity Builder
+          sshAgent: ${{ env.SSH_PRIVATE_KEY != '' && env.SSH_AUTH_SOCK || '' }}
 
       - uses: actions/upload-artifact@v4
         with:
