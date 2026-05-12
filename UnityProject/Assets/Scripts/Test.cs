@@ -10,6 +10,7 @@ using UnityEngine.UI;
 
 public class Test : MonoBehaviour
 {
+    
     public Button btn_increase;
     public Button btn_decrease;
     public Button btn_haptic;
