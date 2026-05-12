@@ -1,6 +1,3 @@
 [submodule "UnityProject/Assets/CUShader"]
 	path = UnityProject/Assets/CUShader
 	url = https://github.com/cheng-dcl/cheng.unity.shader.git
-[submodule "UnityProject/Assets/CUFramework"]
-	path = UnityProject/Assets/CUFramework
-	url = https://github.com/cheng-dcl/CUFramework

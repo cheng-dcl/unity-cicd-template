@@ -1,5 +1,14 @@
 {
   "dependencies": {
+    "cheng.unity.cu-framework": {
+      "version": "git@github.com:cheng-dcl/CUFramework.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+      },
+      "hash": "ef4d4ff790a6feac4f328edcd492ac9c23c8fecd"
+    },
     "com.unity.burst": {
       "version": "1.8.21",
       "depth": 1,
