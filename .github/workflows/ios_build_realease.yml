@@ -71,7 +71,7 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: build-${{ env.UNITY_PROJECT_PATH }}-iOS
+          name: build-iOS
           path: build/iOS
           retention-days: 1
 
@@ -80,6 +80,8 @@ jobs:
     runs-on: macos-latest
     needs: buildForiOSPlatform
     if: ${{ always() && github.event.inputs.step == 'release' || success() && github.event.inputs.step == 'full' }}
+    env:
+      UNITY_PROJECT_PATH: ${{ vars.UNITY_PROJECT_PATH || '' }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
