@@ -72,10 +72,11 @@ jobs:
     if: needs.prepare_matrix.outputs.selected_platforms != '[]'
 
     name: Build for ${{ matrix.targetPlatform }}
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     # 设置UNITY_PROJEC_PATH，甚至可以使用切换多个unity项目，不设置则为仓库根目录
     env:
       UNITY_PROJECT_PATH: ${{ vars.UNITY_PROJECT_PATH || '' }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY || '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -92,28 +93,17 @@ jobs:
           token: ${{ secrets.GH_PAT }}
 
       # 步骤 A：将 GitHub 添加到 SSH 的已知主机列表中，防止连接时卡在确认提示上
-      # - name: "Add GitHub to the SSH known hosts (Linux)"
-      #   run: |
-      #     mkdir -p -m 0700 /home/runner/.ssh
-      #     curl --silent https://api.github.com/meta | jq --raw-output '"github.com "+.ssh_keys[]' >> /home/runner/.ssh/known_hosts
-      #     chmod 600 /home/runner/.ssh/known_hosts
-
-      # 步骤 A：Windows 版本 - 添加 GitHub SSH 信任（等价于你原来的 Linux 代码）
-      - name: Add GitHub to SSH known hosts
+      - name: "Add GitHub to the SSH known hosts (Linux)"
         run: |
-          $sshPath = "$env:USERPROFILE\.ssh"
-          New-Item -Path $sshPath -ItemType Directory -Force | Out-Null
-          @"
-            github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzRmURUcB9jrrQ5G5nq4nS+vGpQjMui4lT5t5
-            github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N8uLggX/v14mrdnF0qiv6ocEfbsHqqDtRXvo19K84/Fhw=
-            github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HsiEibh8v+NHqWXNw5C7SnLgwFioJU177VnW7tP3U7nKfOhYvUeI87VbQxC2c0pvhNWN2jrVM2k0USE8LI4qwoxUSWh9xN9cyms3OuaWRwI8fQz26sdJHrHV30LVgjr4wCQtMy75CKxVc3g5GX121b3Emn79k7h0DFyrp0bq0F5ScXLw0NzLOhrYihmRqIp74peVKKhtsRwtK4ySJPCV5cmJz7o0dGX0fFAguZEEo8vQwRJqyrbKjg5yR4BN3Vjv9X+Sc7m9J210FZKwbADvnsw==
-          "@ | Out-File "$sshPath\known_hosts" -Encoding utf8
-        shell: powershell
+          mkdir -p -m 0700 /home/runner/.ssh
+          curl --silent https://api.github.com/meta | jq --raw-output '"github.com "+.ssh_keys[]' >> /home/runner/.ssh/known_hosts
+          chmod 600 /home/runner/.ssh/known_hosts
 
       # 步骤 B：启动 SSH Agent 并加载你存放在 Secret 中的私钥
-      - uses: webfactory/ssh-agent@v0.8.0
+      - if: env.SSH_PRIVATE_KEY != ''
+        uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
 
       - uses: actions/cache@v3
         # with:
@@ -137,10 +127,8 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
           projectPath: ${{ env.UNITY_PROJECT_PATH }}
-          customImage: "unityci/editor:windows-2022.3.62f3-windows-il2cpp-3.2.2"
-          allowDirtyBuild: true
-          # 关键点：将 SSH Agent 的 Socket 传给运行在 Docker 中的 Unity Builder
-          sshAgent: ${{ env.SSH_AUTH_SOCK }}
+          # 将 SSH Agent自动生成的SSH_AUTH_SOCK传给运行在 Docker中的Unity Builder
+          sshAgent: ${{ env.SSH_PRIVATE_KEY != '' && env.SSH_AUTH_SOCK || '' }}
 
       - uses: actions/upload-artifact@v4
         with:
