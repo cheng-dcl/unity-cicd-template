@@ -1,1 +1,2 @@
--define:TEST_RSP -define:TEST_RSP2
+-define:TEST_RSP
+-define:TEST_RSP2
