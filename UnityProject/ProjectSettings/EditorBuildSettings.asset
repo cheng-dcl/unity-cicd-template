@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TestHaptic.unity
     guid: 39eecc6044db43f469be287873f7bf22
+  - enabled: 1
+    path: Assets/Scenes/TestNotication.unity
+    guid: 68a3802225e4812408045543b00e4ffb
   m_configObjects: {}

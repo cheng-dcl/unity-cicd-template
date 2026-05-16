@@ -14,6 +14,7 @@ public class Test : MonoBehaviour
     public Button btn_increase;
     public Button btn_decrease;
     public Button btn_haptic;
+    public Button btn_notification;
     public TMP_Text text;
 
     public Transform liquid;
@@ -51,6 +52,11 @@ public class Test : MonoBehaviour
         {
             CU.Audio.Music.Pause();
             SceneManager.LoadScene(2);
+        });
+        btn_notification.onClick.AddListener(() =>
+        {
+            CU.Audio.Music.Pause();
+            SceneManager.LoadScene(3);
         });
     }
 

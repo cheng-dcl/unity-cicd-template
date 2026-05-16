@@ -1,7 +1,9 @@
 {
   "dependencies": {
-    "cheng.unity.cu-framework": "git@github.com:cheng-dcl/CUFramework.git",
+    "com.cheng.cu-framework": "git@github.com:cheng-dcl/CUFramework.git",
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.unity.feature.development": "1.0.1",
+    "com.unity.mobile.notifications": "2.4.3",
     "com.unity.nuget.newtonsoft-json": "3.2.1",
     "com.unity.render-pipelines.universal": "14.0.12",
     "com.unity.textmeshpro": "3.0.7",

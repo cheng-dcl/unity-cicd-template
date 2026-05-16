@@ -242,6 +242,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1228616478}
+  - {fileID: 1885712868}
   m_Father: {fileID: 1712520558}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &327839783
@@ -1202,6 +1203,68 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   persistentDBPresets: {fileID: 0}
+--- !u!1 &1885712867
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1885712868}
+  - component: {fileID: 1885712869}
+  m_Layer: 0
+  m_Name: Notification
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1885712868
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885712867}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 324580777}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1885712869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885712867}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf956f0b87a94c6e8fdb77857f30a18e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  notifications:
+  - title: Interval
+    body: Are you ready to play?
+    repeat: 1
+    triggerType: 0
+    intervalMinutes: 60
+    day: 0
+    hour: 0
+    minute: 0
+  - title: Calender
+    body: Are you ready to play?
+    repeat: 1
+    triggerType: 1
+    intervalMinutes: 60
+    day: 1
+    hour: 3
+    minute: 0
+  testAndroid: 0
 --- !u!1 &1911835091
 GameObject:
   m_ObjectHideFlags: 0

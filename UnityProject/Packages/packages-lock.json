@@ -1,13 +1,20 @@
 {
   "dependencies": {
-    "cheng.unity.cu-framework": {
+    "com.cheng.cu-framework": {
       "version": "git@github.com:cheng-dcl/CUFramework.git",
       "depth": 0,
       "source": "git",
       "dependencies": {
         "com.unity.nuget.newtonsoft-json": "3.2.1"
       },
-      "hash": "2906556efbeca259376c49ad600fdcf541f8aad5"
+      "hash": "466a4e1090fbae30ed232bb8923a8f3eea76074c"
+    },
+    "com.cysharp.unitask": {
+      "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "e5acc106ee196bc5a32fb14cdf2987b0f96d11e0"
     },
     "com.unity.burst": {
       "version": "1.8.21",
@@ -77,6 +84,15 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.mobile.notifications": {
+      "version": "2.4.3",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.androidjni": "1.0.0"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.nuget.newtonsoft-json": {
