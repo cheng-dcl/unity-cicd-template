@@ -1248,21 +1248,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   notifications:
-  - title: Interval
+  - id: interval_0
+    title: Interval
     body: Are you ready to play?
     repeat: 1
     triggerType: 0
-    intervalMinutes: 60
+    intervalMinutes: 1
     day: 0
     hour: 0
     minute: 0
-  - title: Calender
+  - id: calender_0
+    title: Calender
     body: Are you ready to play?
     repeat: 1
     triggerType: 1
     intervalMinutes: 60
     day: 1
-    hour: 3
+    hour: 0
     minute: 0
   testAndroid: 0
 --- !u!1 &1911835091

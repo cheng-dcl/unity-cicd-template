@@ -1,23 +1,31 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using CUFramework.Custom;
 using CUFramework.Entry;
+using CUFramework.Module.Notification;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class TestNotification : MonoBehaviour
 {
     
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
+    public Button btn_test0;
+    public Button btn_test1;
+    public Button btn_send;
+    public Button btn_back;
+    public TMP_InputField input_hour;
+    public TMP_InputField input_minute;
 
-    // public void VibrateCustom(HapticCustomData customData)
-    // {
-    //     
-    // }
-    
+    private void Awake()
+    {
+        btn_test0.onClick.AddListener(Test0);
+        btn_test1.onClick.AddListener(Test1);
+        btn_send.onClick.AddListener(Send);
+        btn_back.onClick.AddListener(Back);
+    }
 
     public void Test0()
     {
@@ -31,10 +39,14 @@ public class TestNotification : MonoBehaviour
 
     public void Send()
     {
+        int hour = string.IsNullOrEmpty(input_hour.text) ? 0 : int.Parse(input_hour.text);
+        int minute = string.IsNullOrEmpty(input_minute.text) ? 0 : int.Parse(input_minute.text);
+        var notification = CU.Notification.notifications.Find(n => n.triggerType == NotificationTriggerType.Calendar);
+        notification.hour = hour;
+        notification.minute = minute;
         CU.Notification.Test();
     }
     
-    public void VibrateUnity() => CU.Haptic.VibrateUnity();
 
     public void Back()
     {

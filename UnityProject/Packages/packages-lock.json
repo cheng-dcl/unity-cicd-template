@@ -7,7 +7,7 @@
       "dependencies": {
         "com.unity.nuget.newtonsoft-json": "3.2.1"
       },
-      "hash": "466a4e1090fbae30ed232bb8923a8f3eea76074c"
+      "hash": "904a2b742a08329c9fc1151ac2a37e4887eecea4"
     },
     "com.cysharp.unitask": {
       "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",

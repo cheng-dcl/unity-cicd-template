@@ -16,6 +16,7 @@ public class Test : MonoBehaviour
     public Button btn_haptic;
     public Button btn_notification;
     public TMP_Text text;
+    public TMP_Text versionText;
 
     public Transform liquid;
 
@@ -32,6 +33,7 @@ public class Test : MonoBehaviour
         _renderer = liquid.GetComponent<Renderer>();
         _materialProperty = new MaterialPropertyBlock();
         CU.Audio.Music.Play(MusicKey.Background);
+        versionText.text = $"Version: {Application.version}";
     }
 
     private void OnEnable()

@@ -1874,6 +1874,7 @@ MonoBehaviour:
   btn_haptic: {fileID: 59694129}
   btn_notification: {fileID: 1075872286}
   text: {fileID: 518641573}
+  versionText: {fileID: 20018414}
   liquid: {fileID: 383107353}
 --- !u!4 &1916200671
 Transform:
