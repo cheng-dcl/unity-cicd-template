@@ -1247,26 +1247,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf956f0b87a94c6e8fdb77857f30a18e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  notifications:
-  - id: interval_0
+  setting:
+    showForeground: 0
+    presentationOptions: -1
+    settingsSection: 1
+  datas:
+  - identifier: 100
     title: Interval
-    body: Are you ready to play?
+    text: Hahaha
     repeat: 1
     triggerType: 0
     intervalMinutes: 1
     day: 0
     hour: 0
     minute: 0
-  - id: calender_0
+    sendOnQuit: 1
+  - identifier: 200
     title: Calender
-    body: Are you ready to play?
+    text: Play The Game
     repeat: 1
     triggerType: 1
-    intervalMinutes: 60
+    intervalMinutes: 1
     day: 0
     hour: 0
     minute: 0
-  testAndroid: 0
+    sendOnQuit: 1
 --- !u!1 &1911835091
 GameObject:
   m_ObjectHideFlags: 0

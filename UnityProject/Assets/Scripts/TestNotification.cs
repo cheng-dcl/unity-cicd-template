@@ -12,42 +12,40 @@ using UnityEngine.UI;
 public class TestNotification : MonoBehaviour
 {
     
-    public Button btn_test0;
-    public Button btn_test1;
+
     public Button btn_send;
     public Button btn_back;
+    public Button btn_cancel;
+    public Button btn_openSetting;
     public TMP_InputField input_day;
     public TMP_InputField input_hour;
     public TMP_InputField input_minute;
-
+    
     private void Awake()
     {
-        btn_test0.onClick.AddListener(Test0);
-        btn_test1.onClick.AddListener(Test1);
+
         btn_send.onClick.AddListener(Send);
         btn_back.onClick.AddListener(Back);
+        btn_cancel.onClick.AddListener(Cancel);
+        btn_openSetting.onClick.AddListener(OpenSetting);
     }
 
-    public void Test0()
-    {
-        CU.Notification.testAndroid = 0;
-    }
-    
-    public void Test1()
-    {
-        CU.Notification.testAndroid = 1;
-    }
+
 
     public void Send()
     {
-        int day = string.IsNullOrEmpty(input_day.text) ? 0 : int.Parse(input_day.text);
-        int hour = string.IsNullOrEmpty(input_hour.text) ? 0 : int.Parse(input_hour.text);
-        int minute = string.IsNullOrEmpty(input_minute.text) ? 0 : int.Parse(input_minute.text);
-        var notification = CU.Notification.notifications.Find(n => n.triggerType == NotificationTriggerType.Calendar);
+        var day = string.IsNullOrEmpty(input_day.text) ? 0 : int.Parse(input_day.text);
+        var hour = string.IsNullOrEmpty(input_hour.text) ? 0 : int.Parse(input_hour.text);
+        var minute = string.IsNullOrEmpty(input_minute.text) ? 0 : int.Parse(input_minute.text);
+        var notification = CU.Notification.datas.Find(n => n.triggerType == NotificationTriggerType.Calendar);
         notification.day = day;
         notification.hour = hour;
         notification.minute = minute;
-        CU.Notification.Test();
+        
+        foreach (var notificationData in CU.Notification.datas)
+        {
+            CU.Notification.ScheduleNotification(notificationData);;
+        }
     }
     
 
@@ -56,7 +54,17 @@ public class TestNotification : MonoBehaviour
         CU.Audio.Music.Play();
         SceneManager.LoadScene(1);
     }
+    
+    public void Cancel()
+    {
+        CU.Notification.CancelAllNotifications();
 
+    }
+    
+    public void OpenSetting()
+    {
+        CU.Notification.OpenNotificationSettings();
+    }
     // Update is called once per frame
     void Update()
     {
