@@ -1263,7 +1263,7 @@ MonoBehaviour:
     repeat: 1
     triggerType: 1
     intervalMinutes: 60
-    day: 1
+    day: 0
     hour: 0
     minute: 0
   testAndroid: 0

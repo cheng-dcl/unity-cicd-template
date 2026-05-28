@@ -34,6 +34,7 @@ public class Test : MonoBehaviour
         _materialProperty = new MaterialPropertyBlock();
         CU.Audio.Music.Play(MusicKey.Background);
         versionText.text = $"Version: {Application.version}";
+        
     }
 
     private void OnEnable()

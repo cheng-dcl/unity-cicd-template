@@ -16,6 +16,7 @@ public class TestNotification : MonoBehaviour
     public Button btn_test1;
     public Button btn_send;
     public Button btn_back;
+    public TMP_InputField input_day;
     public TMP_InputField input_hour;
     public TMP_InputField input_minute;
 
@@ -39,9 +40,11 @@ public class TestNotification : MonoBehaviour
 
     public void Send()
     {
+        int day = string.IsNullOrEmpty(input_day.text) ? 0 : int.Parse(input_day.text);
         int hour = string.IsNullOrEmpty(input_hour.text) ? 0 : int.Parse(input_hour.text);
         int minute = string.IsNullOrEmpty(input_minute.text) ? 0 : int.Parse(input_minute.text);
         var notification = CU.Notification.notifications.Find(n => n.triggerType == NotificationTriggerType.Calendar);
+        notification.day = day;
         notification.hour = hour;
         notification.minute = minute;
         CU.Notification.Test();
